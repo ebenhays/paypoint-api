@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email    String @unique
+  password String
+
+  firstName          String
+  lastName           String
+  mustChangePassword Boolean?     @default(true)
+  lastChangedDate    DateTime?
+  role               Role
+  organization       Organization @relation(fields: [orgId], references: [orgCode])
+  orgId              String
+  status             Status
+  primaryPhone       String?
+  secondayPhone      String?
+  userGuid           String?      @default(uuid())
+}
+
+model Organization {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orgName String
+  orgCode String? @unique @default(uuid())
+  User    User[]
+}
+
+model Stock {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stockName     String
+  stockNo       String          @unique @default(uuid())
+  marketName    String?
+  price         Decimal
+  discount      Decimal?        @default(0.00)
+  fbdNo         String?
+  manfDate      DateTime
+  expiryDate    DateTime
+  noOfBoxes     Int
+  itemPerbox    Int
+  totalItems    Int
+  picUrl        String?
+  DailySaleEod  DailySaleEod[]
+  DailySaleTemp DailySaleTemp[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categoryName String
+  categoryCode String @unique @default(uuid())
+}
+
+model DailySale {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  batchNo    String   @unique
+  totalSales Decimal
+  salesDate  DateTime
+  teller     String
+  txnDate    DateTime
+}
+
+model Account {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  txnDate   DateTime
+  credit    Decimal
+  debit     Decimal
+  narration String
+  batchNo   String
+  teller    String
+}
+
+model DailySaleEod {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stock           Stock    @relation(fields: [stockId], references: [stockNo])
+  txnDate         DateTime
+  qty             Int
+  price           Decimal
+  customerAmt     Decimal
+  customerBalance Decimal
+  batchNo         String
+  teller          String
+  stockId         String
+}
+
+model DailySaleTemp {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stock           Stock?   @relation(fields: [stockId], references: [stockNo])
+  stockId         String
+  txnDate         DateTime
+  qty             Int
+  price           Decimal
+  customerAmt     Decimal
+  customerBalance Decimal
+  batchNo         String
+  teller          String
+}
+
+enum Role {
+  TELLER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
