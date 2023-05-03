@@ -1,5 +1,6 @@
 export interface ISystemResponse{
     message: string,
     code: number,
-    data: any
+    data: any,
+    error?:any
 }

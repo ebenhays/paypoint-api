@@ -59,19 +59,24 @@ export class AuthService{
             where:{
                 email: data.email,
                 status: Status.ACTIVE
-            },          
+            },
+            include:{
+                organization:true
+            }          
         })
 
         if(!findUser) return {
             message: SYSTEM_MESSAGE.UNKNOWN_ERROR,
             code : SYSTEM_CODE.UNKNOWN_ERROR,
-            data: new ForbiddenException()
+            data: null,
+            error:new ForbiddenException('Access Denied').getResponse()
         }
         const verifyPass = argon.verify(findUser.password,data.password)
         if(!verifyPass) return {
             message: SYSTEM_MESSAGE.INVALID_CREDENTIALS,
             code : SYSTEM_CODE.INVALID_CREDENTIALS,
-            data: null
+            data: null,
+            error:new ForbiddenException('Access Denied').getResponse()
         }
         if(findUser.mustChangePassword) return {
             message: SYSTEM_MESSAGE.FIRST_TIME_LOGIN_CHANGE_PASSWORD,
@@ -92,7 +97,10 @@ export class AuthService{
                 firstName: findUser.firstName,
                 lastName: findUser.lastName,
                 email: findUser.email,
-                org: findUser.orgId,
+                organization: {
+                    orgName: findUser.organization.orgName,
+                    orgCode: findUser.organization.orgCode
+                },
                 access_token: await this.jwtService.signAsync({
                     email: data.email,
                     role: findUser.role

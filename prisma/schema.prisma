@@ -28,7 +28,7 @@ model User {
   status             Status
   primaryPhone       String?
   secondayPhone      String?
-  userGuid           String?      @default(uuid())
+  userGuid           String?      @unique() @default(uuid())
 }
 
 model Organization {
@@ -48,16 +48,21 @@ model Stock {
 
   stockName     String
   stockNo       String          @unique @default(uuid())
+  category      Category        @relation(fields: [categoryId], references: [categoryCode])
+  categoryId    String
   marketName    String?
   price         Decimal
   discount      Decimal?        @default(0.00)
   fbdNo         String?
-  manfDate      DateTime
+  manfDate      DateTime?       @default(now())
   expiryDate    DateTime
   noOfBoxes     Int
   itemPerbox    Int
   totalItems    Int
   picUrl        String?
+  productCode   String?
+  barCode       BarCode?        @relation(fields: [barCodeId], references: [barCodeNo])
+  barCodeId     String?
   DailySaleEod  DailySaleEod[]
   DailySaleTemp DailySaleTemp[]
 }
@@ -68,7 +73,19 @@ model Category {
   updatedAt DateTime @updatedAt
 
   categoryName String
-  categoryCode String @unique @default(uuid())
+  categoryCode String  @unique @default(uuid())
+  Stock        Stock[]
+}
+
+model BarCode {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  barCodeName String
+  barCodeNo   String  @unique
+  barCodeUid  String? @unique @default(uuid())
+  Stock       Stock[]
 }
 
 model DailySale {

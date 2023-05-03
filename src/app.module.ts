@@ -4,6 +4,10 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrganizationModule } from './organization/organization.module';
+import { StockModule } from './stock/stock.module';
+import { CategoryModule } from './category/category.module';
+import { BarcodeModule } from './barcode/barcode.module';
+import { SalesModule } from './sales/sales.module';
 
 
 @Module({
@@ -12,7 +16,7 @@ import { OrganizationModule } from './organization/organization.module';
     AuthModule, 
     UserModule, 
     PrismaModule, 
-    OrganizationModule
+    OrganizationModule, StockModule, CategoryModule, BarcodeModule, SalesModule
   ],
   controllers: [],
   providers: [],
