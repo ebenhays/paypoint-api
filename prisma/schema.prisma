@@ -26,7 +26,7 @@ model User {
   organization       Organization @relation(fields: [orgId], references: [orgCode])
   orgId              String
   status             Status
-  primaryPhone       String?
+  primaryPhone       String?      @unique
   secondayPhone      String?
   userGuid           String?      @unique() @default(uuid())
 }
@@ -51,8 +51,8 @@ model Stock {
   category      Category        @relation(fields: [categoryId], references: [categoryCode])
   categoryId    String
   marketName    String?
-  price         Decimal
-  discount      Decimal?        @default(0.00)
+  price         Float
+  discount      Float?          @default(0.00)
   fbdNo         String?
   manfDate      DateTime?       @default(now())
   expiryDate    DateTime
@@ -93,11 +93,12 @@ model DailySale {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  batchNo    String   @unique
-  totalSales Decimal
+  batchNo    String    @unique
+  totalSales Float
   salesDate  DateTime
   teller     String
   txnDate    DateTime
+  Account    Account[]
 }
 
 model Account {
@@ -106,10 +107,11 @@ model Account {
   updatedAt DateTime @updatedAt
 
   txnDate   DateTime
-  credit    Decimal
-  debit     Decimal
+  credit    Float
+  debit     Float
   narration String
-  batchNo   String
+  dailySale DailySale @relation(fields: [batchId], references: [batchNo])
+  batchId   String
   teller    String
 }
 
@@ -121,12 +123,15 @@ model DailySaleEod {
   stock           Stock    @relation(fields: [stockId], references: [stockNo])
   txnDate         DateTime
   qty             Int
-  price           Decimal
-  customerAmt     Decimal
-  customerBalance Decimal
+  price           Float
+  customerAmt     Float
+  customerBalance Float
+  total           Float
   batchNo         String
   teller          String
   stockId         String
+  tellerId        String
+  txnId           String   @unique() @default(uuid())
 }
 
 model DailySaleTemp {
@@ -136,13 +141,28 @@ model DailySaleTemp {
 
   stock           Stock?   @relation(fields: [stockId], references: [stockNo])
   stockId         String
-  txnDate         DateTime
+  txnDate         DateTime @default(now())
   qty             Int
-  price           Decimal
-  customerAmt     Decimal
-  customerBalance Decimal
+  price           Float
+  customerAmt     Float
+  customerBalance Float
+  total           Float
   batchNo         String
   teller          String
+  tellerId        String
+  txnId           String?  @unique() @default(uuid())
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  custName       String
+  customerNo     String @unique
+  primaryPhone   String @unique
+  secondaryPhone String
+  emailAddress   String @unique
 }
 
 enum Role {

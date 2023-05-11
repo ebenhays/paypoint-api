@@ -1,5 +1,5 @@
 import { Role } from "@prisma/client"
-import {Allow, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword } from "class-validator"
+import {Allow, IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword } from "class-validator"
 
 export class ISignup{
     @IsEmail()

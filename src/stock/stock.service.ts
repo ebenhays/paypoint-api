@@ -8,26 +8,26 @@ import { SYSTEM_CODE, SYSTEM_MESSAGE } from 'src/utils/constants';
 
 @Injectable()
 export class StockService {
-    constructor(private prisma:PrismaService){}
+    constructor(private prisma: PrismaService) { }
 
-    async createNewStock(data:IStock):Promise<ISystemResponse>{
-        if(moment(data.expiryDate).isSameOrBefore(new Date())){
+    async createNewStock(data: IStock): Promise<ISystemResponse> {
+        if (moment(data.expiryDate).isSameOrBefore(new Date())) {
             throw new BadRequestException('Please check expiry date')
         }
         const saveStock = await this.prisma.stock.create({
-            data:{
+            data: {
                 stockName: data.stockName,
                 categoryId: data.categoryId,
                 marketName: data.marketName,
                 price: data.price,
                 fbdNo: data.fdbNo,
                 manfDate: data.manfDate,
-                expiryDate: new Date(data.expiryDate) ,
+                expiryDate: new Date(data.expiryDate),
                 noOfBoxes: +data.noOfBoxes,
                 itemPerbox: +data.itemPerBox,
                 totalItems: +data.noOfBoxes * +data.itemPerBox,
                 picUrl: data.picUrl,
-                productCode: gen(6)
+                productCode: gen(6),
             }
         })
 
@@ -38,17 +38,26 @@ export class StockService {
         }
     }
 
-    async getStocks({limit,offset}):Promise<ISystemResponse> {
-        const stocks = await this.prisma.stock.findMany({
-            take:+limit,
+    async getStocks({ limit, offset }): Promise<ISystemResponse> {
+        let stocks = await this.prisma.stock.findMany({
+            take: +limit,
             skip: +offset,
-            include:{
-                category:true
+            where: {
+                itemPerbox: {
+                    gt: 0,
+                },
             },
-            orderBy:{
-                stockName:'asc'
-            }         
+            include: {
+                category: true
+            },
+            orderBy: {
+                stockName: 'asc'
+            }
         })
+        for (let stock of stocks) {
+            const discountApplied = (stock.discount / 100) * stock.price
+            stock.price -= discountApplied
+        }
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,
@@ -56,15 +65,20 @@ export class StockService {
         }
     }
 
-    async getStock(data:string):Promise<ISystemResponse> {
-        const stock = await this.prisma.stock.findMany({
-            where:{
-                stockNo: data
+    async getStock(data: string): Promise<ISystemResponse> {
+        const stock = await this.prisma.stock.findFirst({
+            where: {
+                stockNo: data,
+                itemPerbox: {
+                    gt: 0
+                }
             },
-            include:{
-                category:true
+            include: {
+                category: true
             }
         })
+
+        stock.price -= (stock.discount / 100) * stock.price
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,
@@ -72,12 +86,12 @@ export class StockService {
         }
     }
 
-    async updateStock(data:IStock,stockId:string):Promise<ISystemResponse>{
+    async updateStock(data: IStock, stockId: string): Promise<ISystemResponse> {
         const updateProd = await this.prisma.stock.update({
-            where:{
+            where: {
                 stockNo: stockId
             },
-            data:{
+            data: {
                 stockName: data.stockName,
                 categoryId: data.categoryId,
                 marketName: data.marketName,
@@ -101,15 +115,15 @@ export class StockService {
         }
     }
 
-    async deleteStock(stockId:string):Promise<ISystemResponse>{
+    async deleteStock(stockId: string): Promise<ISystemResponse> {
         const findItem = await this.prisma.stock.findFirst({
-            where:{
+            where: {
                 stockNo: stockId
             }
         })
-        if(!findItem) throw new NotFoundException('Cannot delete this item')
+        if (!findItem) throw new NotFoundException('Cannot delete this item')
         await this.prisma.stock.delete({
-            where:{
+            where: {
                 stockNo: stockId
             }
         })
@@ -117,7 +131,7 @@ export class StockService {
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,
-            data:'Item deleted successfully'
+            data: 'Item deleted successfully'
         }
     }
 

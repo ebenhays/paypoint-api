@@ -5,9 +5,9 @@ services:
     ports: 
     - 5432:5432
     environment:
-      POSTGRES_DATABASE: paypoint
-      POSTGRES_USER: ebenhays
-      POSTGRES_PASSWORD: L!feisgoog123
+      POSTGRES_DATABASE:${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     networks:
       - nestjs_network
 networks:
