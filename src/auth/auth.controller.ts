@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, HttpCode, Post, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { IChangePassword, ISignin, ISignup } from "./dto";
 import { JwtAuthGuard } from "./guard";
@@ -9,22 +9,31 @@ export class AuthController {
 
     //@UseGuards(JwtAuthGuard)
     @Post('signup')
+    @HttpCode(200)
     signup(@Body() data: ISignup) {
         return this.authService.signup(data)
     }
 
     @Post('signin')
+    @HttpCode(200)
     signIn(@Body() data: ISignin) {
         return this.authService.signin(data)
     }
 
     @UseGuards(JwtAuthGuard)
     @Post('change-password')
+    @HttpCode(200)
     changepassword(@Body() data: IChangePassword) {
-        return this.authService.changePassword(data)
+        try {
+            return this.authService.changePassword(data)
+        } catch (error) {
+            console.log(error)
+        }
+
     }
 
     @Post('reset-password')
+    @HttpCode(200)
     resetpassword(@Body() email: string) {
         return this.authService.resetPassword(email)
     }
