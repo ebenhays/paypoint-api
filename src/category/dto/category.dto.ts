@@ -1,6 +1,8 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty } from "class-validator";
 
-export class ICategory{
+export class ICategory {
     @IsNotEmpty()
-    categoryName:string
+    @ApiProperty()
+    categoryName: string
 }

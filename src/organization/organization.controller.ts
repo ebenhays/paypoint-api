@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard';
 import { IPaginate } from '../user/dto';
 import { IOrg } from './dto';
 import { OrganizationService } from './organization.service';
 
-
+@ApiTags('organization')
 @UseGuards(JwtAuthGuard)
 @Controller('organization')
 export class OrganizationController {

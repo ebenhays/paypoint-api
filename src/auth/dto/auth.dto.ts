@@ -1,12 +1,15 @@
+import { ApiProperty } from "@nestjs/swagger"
 import { Role } from "@prisma/client"
-import {Allow, IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword } from "class-validator"
+import { Allow, IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword } from "class-validator"
 
-export class ISignup{
+export class ISignup {
     @IsEmail()
     @IsNotEmpty()
+    @ApiProperty()
     email: string
 
     @Allow()
+    @ApiProperty({ required: false })
     password?: string
 
     @IsNotEmpty()
@@ -15,66 +18,77 @@ export class ISignup{
 
     @IsNotEmpty()
     @IsString()
+    @ApiProperty()
     lastName: string
 
     @Allow()
-    mustChangePassword?:boolean
+    mustChangePassword?: boolean
 
     @Allow()
-    lastChangedDate?:Date
+    @ApiProperty({ required: false })
+    lastChangedDate?: Date
 
     @IsEnum(Role)
-    role:Role
+    @ApiProperty()
+    role: Role
 
     @Allow()
-    orgCode?:string
+    @ApiProperty({ required: false })
+    orgCode?: string
 
     @IsNotEmpty()
+    @ApiProperty()
     primaryPhone?: string
 
     @Allow()
+    @ApiProperty({ required: false })
     secondayPhone?: string
 
 }
 
-export class ISignin{
+export class ISignin {
     @IsEmail()
     @IsNotEmpty()
-    email:string
+    @ApiProperty()
+    email: string
 
     @IsNotEmpty()
     @IsStrongPassword({
         minLength: 8,
-        minLowercase:3,
+        minLowercase: 3,
         minUppercase: 1,
         minNumbers: 3,
         minSymbols: 1
     })
-    password:string
+    @ApiProperty()
+    password: string
 }
 
-export class IChangePassword{
+export class IChangePassword {
     @IsEmail()
     @IsNotEmpty()
-    email:string
+    @ApiProperty()
+    email: string
 
     @IsNotEmpty()
     @IsStrongPassword({
         minLength: 8,
-        minLowercase:3,
+        minLowercase: 3,
         minUppercase: 1,
         minNumbers: 3,
         minSymbols: 1
     })
-    password:string
+    @ApiProperty()
+    password: string
 
     @IsNotEmpty()
     @IsStrongPassword({
         minLength: 8,
-        minLowercase:3,
+        minLowercase: 3,
         minUppercase: 1,
         minNumbers: 3,
         minSymbols: 1
     })
-    confirmPassword:string
+    @ApiProperty()
+    confirmPassword: string
 }

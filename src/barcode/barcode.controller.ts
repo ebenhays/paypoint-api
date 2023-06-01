@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { IPaginate } from '../user/dto';
 import { BarcodeService } from './barcode.service';
 import { IBarCode } from './dto';
 
+@ApiTags('barcode')
 @Controller('barcodes')
 export class BarcodeController {
     constructor(private barcodeService: BarcodeService) { }

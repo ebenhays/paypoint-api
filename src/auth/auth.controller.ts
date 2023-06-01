@@ -1,8 +1,10 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from "@nestjs/common";
+import { ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { IChangePassword, ISignin, ISignup } from "./dto";
 import { JwtAuthGuard } from "./guard";
 
+@ApiTags('authentication')
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }

@@ -20,7 +20,6 @@ export class BarcodeService {
                 barCodeUid: true
             }
         })
-
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,

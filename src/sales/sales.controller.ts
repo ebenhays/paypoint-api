@@ -7,20 +7,23 @@ import {
     Post,
     Delete,
     Query,
-    UseGuards
+    UseGuards,
+    ParseArrayPipe
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/auth/decorators';
 import { JwtAuthGuard } from 'src/auth/guard';
 import { IBatch, IDailysales, ITxnDate, ITxnId } from './dto';
 import { SalesService } from './sales.service';
 
+@ApiTags('sales')
 @Controller('sales')
 @UseGuards(JwtAuthGuard)
 export class SalesController {
     constructor(private salesService: SalesService) { }
 
     @Post('create-daily-sales')
-    createDailySales(@Body() data: IDailysales[], @GetUser() userInfo: any) {
+    createDailySales(@Body(new ParseArrayPipe({ items: IDailysales })) data: IDailysales[], @GetUser() userInfo: any) {
         return this.salesService.addDailySales(data, userInfo)
     }
 
