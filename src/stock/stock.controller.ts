@@ -14,6 +14,8 @@ export class StockController {
     @Post('create-stock')
     async addStock(@Body() data: IStock) {
         return this.stockService.createNewStock(data)
+
+
     }
 
     @Get(':id')

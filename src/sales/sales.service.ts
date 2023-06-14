@@ -13,33 +13,19 @@ export class SalesService {
 
     async addDailySales(data: IDailysales[], userInfo: any): Promise<ISystemResponse> {
         const salesData = []
-        const errorSales = []
         const batchNo = gen(6)
         for (let sales of data) {
-            const total = this.calculateCustomerBalance(sales.customerAmt, sales.qty, sales.price)
-            if (total < 0) {
-                errorSales.push(sales)
-                continue
-            }
-
             salesData.push({
                 qty: sales.qty,
                 customerAmt: sales.customerAmt,
                 price: sales.price,
-                total: this.calculateItemTotal(sales.qty, sales.price),
-                customerBalance: total,
                 txnDate: new Date(),
                 stockId: sales.stockId,
                 batchNo,
                 teller: userInfo.fullName,
                 tellerId: userInfo.userName
-
             })
         }
-
-        if (salesData.length < data.length) throw new BadRequestException(
-            `Please check customer amout input for the items:
-             ${JSON.stringify(errorSales)}`)
 
         await this.prisma.dailySaleTemp.createMany({
             data: salesData
@@ -138,7 +124,7 @@ export class SalesService {
             updateData.customerAmt,
             updateData.qty,
             updateData.price)
-        if (custBal < 0) throw new BadRequestException('Total items amount greater than customer amout')
+        if (custBal < 0) throw new BadRequestException('Total items amount greater than customer amount')
 
         const findSaleItem = await this.findSalesTempById(txnId)
         if (!findSaleItem) throw new NotFoundException('could not find this item')
@@ -150,8 +136,6 @@ export class SalesService {
             data: {
                 qty: updateData.qty,
                 customerAmt: updateData.customerAmt,
-                total: this.calculateItemTotal(updateData.qty, updateData.price),
-                customerBalance: custBal
             },
             select: {
                 qty: true,
@@ -208,8 +192,6 @@ export class SalesService {
                 qty: data.qty,
                 price: data.price,
                 customerAmt: data.customerAmt,
-                customerBalance: data.customerBalance,
-                total: data.total,
                 batchNo: data.batchNo,
                 teller: data.teller,
                 stockId: data.stockId,
@@ -222,38 +204,6 @@ export class SalesService {
         await this.prisma.dailySaleEod.createMany({
             data: salesRec
         })
-
-        //calculate the total quantities for the stocks
-
-        const keyMap = {}
-        for (let rec of salesRec) {
-            if (!(rec.stockId in keyMap)) {
-                keyMap[rec.stockId] = rec.qty
-            } else {
-                keyMap[rec.stockId] += rec.qty
-            }
-        }
-
-        //update the quantity in the stock
-        for (let [key, val] of Object.entries(keyMap)) {
-            const getItemPerBox = await this.prisma.stock.findFirst({
-                where: {
-                    stockNo: key
-                }
-            })
-            if (!getItemPerBox) continue
-            const remainingItem = getItemPerBox.itemPerbox - +val
-
-            await this.prisma.stock.update({
-                where: {
-                    stockNo: key
-                },
-                data: {
-                    itemPerbox: remainingItem,
-                    totalItems: getItemPerBox.noOfBoxes * remainingItem
-                }
-            })
-        }
 
         await this.prisma.dailySaleTemp.deleteMany({
             where: {
@@ -272,10 +222,6 @@ export class SalesService {
         const total = customerAmt - (qty * price)
         if (total < 0) return -1
         return total
-    }
-
-    private calculateItemTotal(qty: number, price: number): number {
-        return qty * price
     }
 
     private async findSalesTempById(salesId: string) {

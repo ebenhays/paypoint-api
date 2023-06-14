@@ -19,15 +19,16 @@ export class StockService {
                 stockName: data.stockName,
                 categoryId: data.categoryId,
                 marketName: data.marketName,
+                discount: data.discount || 0.00,
                 price: data.price,
                 fbdNo: data.fdbNo,
                 manfDate: data.manfDate,
                 expiryDate: new Date(data.expiryDate),
                 noOfBoxes: +data.noOfBoxes,
                 itemPerbox: +data.itemPerBox,
-                totalItems: +data.noOfBoxes * +data.itemPerBox,
                 picUrl: data.picUrl,
                 productCode: gen(6),
+                barCodeId: data.barCodeId
             }
         })
 
@@ -50,14 +51,11 @@ export class StockService {
             include: {
                 category: true
             },
+
             orderBy: {
                 stockName: 'asc'
             }
         })
-        for (let stock of stocks) {
-            const discountApplied = (stock.discount / 100) * stock.price
-            stock.price -= discountApplied
-        }
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,
@@ -78,7 +76,6 @@ export class StockService {
             }
         })
 
-        stock.price -= (stock.discount / 100) * stock.price
         return {
             message: SYSTEM_MESSAGE.SUCCESSFUL,
             code: SYSTEM_CODE.SUCCESSFUL,

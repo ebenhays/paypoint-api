@@ -1,98 +1,94 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  email    String @unique
-  password String
-
+  id                 Int          @id @default(autoincrement())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  email              String       @unique
+  password           String
   firstName          String
   lastName           String
   mustChangePassword Boolean?     @default(true)
   lastChangedDate    DateTime?
   role               Role
-  organization       Organization @relation(fields: [orgId], references: [orgCode])
   orgId              String
   status             Status
   primaryPhone       String?      @unique
   secondayPhone      String?
-  userGuid           String?      @unique() @default(uuid())
+  userGuid           String?      @unique @default(uuid())
+  organization       Organization @relation(fields: [orgId], references: [orgCode])
+
+  @@index([orgId], map: "User_orgId_fkey")
 }
 
 model Organization {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  orgName String
-  orgCode String? @unique @default(uuid())
-  User    User[]
+  orgName   String
+  orgCode   String?  @unique @default(uuid())
+  User      User[]
 }
 
 model Stock {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 Int             @id @default(autoincrement())
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  stockName          String
+  stockNo            String          @unique @default(uuid())
+  categoryId         String
+  marketName         String?
+  price              Float
+  discount           Float?          @default(0)
+  fbdNo              String?
+  manfDate           DateTime?       @default(now())
+  expiryDate         DateTime
+  noOfBoxes          Int
+  itemPerbox         Int
+  totalItems         Int?
+  picUrl             String?
+  productCode        String?
+  barCodeId          String?
+  priceAfterDiscount Float?
+  DailySaleEod       DailySaleEod[]
+  DailySaleTemp      DailySaleTemp[]
+  barCode            BarCode?        @relation(fields: [barCodeId], references: [barCodeNo])
+  category           Category        @relation(fields: [categoryId], references: [categoryCode])
 
-  stockName     String
-  stockNo       String          @unique @default(uuid())
-  category      Category        @relation(fields: [categoryId], references: [categoryCode])
-  categoryId    String
-  marketName    String?
-  price         Float
-  discount      Float?          @default(0.00)
-  fbdNo         String?
-  manfDate      DateTime?       @default(now())
-  expiryDate    DateTime
-  noOfBoxes     Int
-  itemPerbox    Int
-  totalItems    Int
-  picUrl        String?
-  productCode   String?
-  barCode       BarCode?        @relation(fields: [barCodeId], references: [barCodeNo])
-  barCodeId     String?
-  DailySaleEod  DailySaleEod[]
-  DailySaleTemp DailySaleTemp[]
+  @@index([barCodeId], map: "Stock_barCodeId_fkey")
+  @@index([categoryId], map: "Stock_categoryId_fkey")
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   categoryName String
-  categoryCode String  @unique @default(uuid())
+  categoryCode String   @unique @default(uuid())
   Stock        Stock[]
 }
 
 model BarCode {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   barCodeName String
-  barCodeNo   String  @unique
-  barCodeUid  String? @unique @default(uuid())
+  barCodeNo   String   @unique
+  barCodeUid  String?  @unique @default(uuid())
   Stock       Stock[]
 }
 
 model DailySale {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   batchNo    String    @unique
   totalSales Float
   salesDate  DateTime
@@ -102,67 +98,69 @@ model DailySale {
 }
 
 model Account {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   txnDate   DateTime
   credit    Float
   debit     Float
   narration String
-  dailySale DailySale @relation(fields: [batchId], references: [batchNo])
   batchId   String
   teller    String
+  dailySale DailySale @relation(fields: [batchId], references: [batchNo])
+
+  @@index([batchId], map: "Account_batchId_fkey")
 }
 
 model DailySaleEod {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  stock           Stock    @relation(fields: [stockId], references: [stockNo])
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   txnDate         DateTime
   qty             Int
   price           Float
   customerAmt     Float
-  customerBalance Float
-  total           Float
   batchNo         String
   teller          String
   stockId         String
   tellerId        String
-  txnId           String   @unique() @default(uuid())
+  txnId           String   @unique @default(uuid())
+  total           Float?
+  customerBalance Float?
+  stock           Stock    @relation(fields: [stockId], references: [stockNo])
+
+  @@index([stockId], map: "DailySaleEod_stockId_fkey")
 }
 
 model DailySaleTemp {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  stock           Stock?   @relation(fields: [stockId], references: [stockNo])
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   stockId         String
   txnDate         DateTime @default(now())
   qty             Int
   price           Float
   customerAmt     Float
-  customerBalance Float
-  total           Float
   batchNo         String
   teller          String
   tellerId        String
-  txnId           String?  @unique() @default(uuid())
+  txnId           String?  @unique @default(uuid())
+  total           Float?
+  customerBalance Float?
+  stock           Stock    @relation(fields: [stockId], references: [stockNo])
+
+  @@index([stockId], map: "DailySaleTemp_stockId_fkey")
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id             Int      @id @default(autoincrement())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   custName       String
-  customerNo     String @unique
-  primaryPhone   String @unique
+  customerNo     String   @unique
+  primaryPhone   String   @unique
   secondaryPhone String
-  emailAddress   String @unique
+  emailAddress   String   @unique
 }
 
 enum Role {
